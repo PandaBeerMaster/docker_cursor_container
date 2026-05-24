@@ -98,6 +98,9 @@ start_as_app() {
 if [[ "$(id -u)" -eq 0 ]]; then
     ensure_profile_dirs
     chown -R app:app "${HOME}" 2>/dev/null || true
+    if [[ -d /projects ]]; then
+        chown -R app:app /projects 2>/dev/null || true
+    fi
     if [[ "${CURSOR_AUTO_UPDATE:-0}" == "1" ]]; then
         /usr/local/bin/update-cursor.sh || true
     fi
