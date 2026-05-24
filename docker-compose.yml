@@ -37,6 +37,7 @@ services:
 
     # Профили на хосте — переживают docker compose down && up -d
     volumes:
+      - ./projects:/projects
       - ./data/cursor-config:/home/app/.config/Cursor
       - ./data/cursor-data:/home/app/.cursor
       - ./data/chrome-profile:/home/app/.config/google-chrome
