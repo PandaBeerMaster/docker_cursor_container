@@ -1,0 +1,6 @@
+data/
+.git/
+.obsidian/
+Документация/
+*.md
+.dockerignore

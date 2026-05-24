@@ -1,0 +1,50 @@
+# Cursor + Chrome + VNC
+# Документация: Документация/docker-compose.md
+
+services:
+  desktop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+        CURSOR_DEB_FILE: ${CURSOR_DEB_FILE:-cursor_3.5.17_amd64.deb}
+    image: cursor-desktop:latest
+    container_name: cursor-desktop
+    restart: unless-stopped
+
+    # Только localhost на хосте (без пароля VNC внутри контейнера)
+    ports:
+      - "127.0.0.1:9999:9999"
+
+    environment:
+      VNC_PORT: "9999"
+      # Разрешение виртуального экрана (Xvfb). Либо VNC_WIDTH + VNC_HEIGHT, либо VNC_RESOLUTION=2560x1440
+      VNC_WIDTH: ${VNC_WIDTH:-1920}
+      VNC_HEIGHT: ${VNC_HEIGHT:-1080}
+      VNC_DEPTH: ${VNC_DEPTH:-24}
+      VNC_RESOLUTION: ${VNC_RESOLUTION:-}
+      DISPLAY: ":1"
+      HOME: /home/app
+      DONT_PROMPT_WSL_INSTALL: "1"
+      BROWSER: /usr/local/bin/open-external-url
+      CHROME_EXECUTABLE: /usr/local/bin/google-chrome-stable
+      # 1 = Cursor при старте (после VNC), 0 = только вручную
+      AUTOSTART_CURSOR: ${AUTOSTART_CURSOR:-1}
+      # 1 = переустановить Cursor из /packages/ при старте (нужен root в entrypoint)
+      CURSOR_AUTO_UPDATE: ${CURSOR_AUTO_UPDATE:-0}
+
+    # Профили на хосте — переживают docker compose down && up -d
+    volumes:
+      - ./data/cursor-config:/home/app/.config/Cursor
+      - ./data/cursor-data:/home/app/.cursor
+      - ./data/chrome-profile:/home/app/.config/google-chrome
+
+    # root → entrypoint chown томов → gosu app (см. entrypoint.sh)
+    # Не задавайте user: здесь, иначе права на ./data могут не выровняться.
+
+    # Chrome / Electron в Docker
+    shm_size: "4gb"
+
+    init: true
