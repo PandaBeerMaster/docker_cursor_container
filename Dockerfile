@@ -83,6 +83,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # libvncserver 0.9.15: исправление буфера обмена хост → VNC (ExtendedClipboard UTF-8, PR #639)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
     build-essential \
     cmake \
     pkg-config \
@@ -93,8 +95,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     && curl -fsSL -o /tmp/libvncserver.tar.gz \
         https://github.com/LibVNC/libvncserver/archive/refs/tags/LibVNCServer-0.9.15.tar.gz \
-    && tar xzf /tmp/libvncserver.tar.gz -C /tmp \
-    && cmake -B /tmp/libvncserver-LibVNCServer-0.9.15/build \
+    && mkdir -p /tmp/libvncserver-src /tmp/libvncserver-build \
+    && tar xzf /tmp/libvncserver.tar.gz -C /tmp/libvncserver-src --strip-components=1 \
+    && cmake -S /tmp/libvncserver-src -B /tmp/libvncserver-build \
         -DCMAKE_BUILD_TYPE=MinSizeRel \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu \
@@ -103,10 +106,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         -DWITH_TESTS=OFF \
         -DWITH_SDL=OFF \
         -DWITH_GTK=OFF \
-    && cmake --build /tmp/libvncserver-LibVNCServer-0.9.15/build -j"$(nproc)" \
-    && cmake --install /tmp/libvncserver-LibVNCServer-0.9.15/build \
+    && cmake --build /tmp/libvncserver-build -j"$(nproc)" \
+    && cmake --install /tmp/libvncserver-build \
     && ldconfig \
-    && rm -rf /tmp/libvncserver.tar.gz /tmp/libvncserver-LibVNCServer-0.9.15 \
+    && rm -rf /tmp/libvncserver.tar.gz /tmp/libvncserver-src /tmp/libvncserver-build \
     && apt-get purge -y --auto-remove \
         build-essential cmake pkg-config \
         zlib1g-dev libjpeg-dev libpng-dev liblzo2-dev libssl-dev \
