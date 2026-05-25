@@ -46,8 +46,7 @@ services:
       - ./data/cursor-config:/home/app/.config/Cursor
       - ./data/cursor-data:/home/app/.cursor
       - ./data/chrome-profile:/home/app/.config/google-chrome
-      # SSH-ключи и config — на хосте в ./data/ssh (переживают пересоздание контейнера)
-      - ./data/ssh:/home/app/.ssh
+      - ./ssh:/home/app/.ssh
 
     # root → entrypoint chown томов → gosu app (см. entrypoint.sh)
     # Не задавайте user: здесь, иначе права на ./data могут не выровняться.
