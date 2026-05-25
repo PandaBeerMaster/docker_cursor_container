@@ -1,0 +1,3 @@
+#!/bin/bash
+# Повторно применить раскладку при старте WM (x11vnc может сбросить XKB).
+/usr/local/bin/setup-vnc-input.sh &

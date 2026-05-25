@@ -1,0 +1,6 @@
+# Дополнение в bash (Tab) и editline
+set completion-ignore-case on
+set show-all-if-ambiguous on
+set menu-complete-display-prefix on
+"\t": menu-complete
+"\e[Z": menu-complete-backward

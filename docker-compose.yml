@@ -29,9 +29,11 @@ services:
       HOME: /home/app
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
-      # Раскладки внутри VNC: us + ru, Alt+Shift для переключения
-      XKB_LAYOUT: ${XKB_LAYOUT:-us,ru}
-      XKB_OPTIONS: ${XKB_OPTIONS:-grp:alt_shift_toggle}
+      # Раскладка: ru (ЙЦУКЕН) + us, переключение Alt+Shift
+      XKB_MODEL: ${XKB_MODEL:-pc105}
+      XKB_LAYOUT: ${XKB_LAYOUT:-ru,us}
+      XKB_VARIANT: ${XKB_VARIANT:-,winkeys}
+      XKB_OPTIONS: ${XKB_OPTIONS:-grp:alt_shift_toggle,grp_led:scroll}
       DONT_PROMPT_WSL_INSTALL: "1"
       BROWSER: /usr/local/bin/open-external-url
       CHROME_EXECUTABLE: /usr/local/bin/google-chrome-stable

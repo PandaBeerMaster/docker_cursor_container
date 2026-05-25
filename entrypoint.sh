@@ -37,6 +37,11 @@ ensure_profile_dirs() {
         "${HOME}/.cursor" \
         "${HOME}/.config/google-chrome" \
         "${HOME}/.config/openbox"
+    if [[ ! -x "${HOME}/.config/openbox/autostart" ]] \
+        && [[ -x /etc/skel/.config/openbox/autostart ]]; then
+        cp /etc/skel/.config/openbox/autostart "${HOME}/.config/openbox/autostart"
+        chmod +x "${HOME}/.config/openbox/autostart"
+    fi
 }
 
 configure_git() {
@@ -95,10 +100,13 @@ start_as_app() {
     export BROWSER=/usr/local/bin/open-external-url
     export CHROME_EXECUTABLE=/usr/local/bin/google-chrome-stable
 
+    export XKB_DEFAULT_MODEL="${XKB_MODEL:-pc105}"
+    export XKB_DEFAULT_LAYOUT="${XKB_LAYOUT:-ru,us}"
+    export XKB_DEFAULT_VARIANT="${XKB_VARIANT:-,winkeys}"
+    export XKB_DEFAULT_OPTIONS="${XKB_OPTIONS:-grp:alt_shift_toggle,grp_led:scroll}"
+
     openbox &
     OPENBOX_PID=$!
-
-    /usr/local/bin/setup-vnc-input.sh
 
     # Без -noxfixes: x11vnc опрашивает CLIPBOARD через XFixes.
     # setclipboard (по умолчанию): принимать буфер с VNC-клиента (хост → контейнер).
@@ -115,6 +123,8 @@ start_as_app() {
 
     sleep 0.5
     /usr/local/bin/setup-vnc-clipboard.sh
+    # x11vnc -xkb может сбросить раскладку — применяем снова после VNC
+    /usr/local/bin/setup-vnc-input.sh
 
     if [[ "${AUTOSTART_CURSOR:-1}" == "1" ]]; then
         sleep 2
