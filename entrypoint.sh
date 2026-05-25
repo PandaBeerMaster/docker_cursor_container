@@ -39,8 +39,36 @@ ensure_profile_dirs() {
         "${HOME}/.config/openbox"
 }
 
+configure_git() {
+    if ! command -v git >/dev/null 2>&1; then
+        return 0
+    fi
+    if [[ -n "${GIT_USER:-}" ]]; then
+        git config --global user.name "${GIT_USER}"
+    fi
+    if [[ -n "${GIT_MAIL:-}" ]]; then
+        git config --global user.email "${GIT_MAIL}"
+    fi
+}
+
+log_gpu_accel() {
+    if [[ "${GPU_ACCEL:-0}" != "1" ]]; then
+        return 0
+    fi
+    if [[ -e /dev/dri/renderD128 || -e /dev/dri/card0 ]]; then
+        echo "GPU_ACCEL=1: /dev/dri доступен"
+        if command -v vainfo >/dev/null 2>&1; then
+            vainfo 2>/dev/null | head -5 || true
+        fi
+    else
+        echo "GPU_ACCEL=1: /dev/dri не найден — проверьте devices в docker-compose.yml" >&2
+    fi
+}
+
 start_as_app() {
     ensure_profile_dirs
+    configure_git
+    log_gpu_accel
 
     rm -f /tmp/.X"${DISPLAY#:}"-lock 2>/dev/null || true
     rm -f "/tmp/.X11-unix/X${DISPLAY#:}" 2>/dev/null || true
@@ -72,7 +100,8 @@ start_as_app() {
 
     /usr/local/bin/setup-vnc-input.sh
 
-    # Без -noxfixes: x11vnc опрашивает CLIPBOARD через XFixes (иначе обмен с хостом не работает).
+    # Без -noxfixes: x11vnc опрашивает CLIPBOARD через XFixes.
+    # setclipboard (по умолчанию): принимать буфер с VNC-клиента (хост → контейнер).
     x11vnc \
         -display "${DISPLAY}" \
         -rfbport "${VNC_PORT}" \
@@ -83,6 +112,9 @@ start_as_app() {
         -noxrecord \
         -noxdamage \
         -bg
+
+    sleep 0.5
+    /usr/local/bin/setup-vnc-clipboard.sh
 
     if [[ "${AUTOSTART_CURSOR:-1}" == "1" ]]; then
         sleep 2

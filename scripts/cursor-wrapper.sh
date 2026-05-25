@@ -3,8 +3,18 @@
 
 set -euo pipefail
 
+# shellcheck source=gpu-accel.sh
+source /usr/local/bin/gpu-accel.sh
+
 export DISPLAY="${DISPLAY:-:1}"
 export HOME="${HOME:-/home/app}"
+
+apply_gpu_accel_env
+
+CURSOR_EXTRA_ARGS=()
+while IFS= read -r flag; do
+    [[ -n "${flag}" ]] && CURSOR_EXTRA_ARGS+=("${flag}")
+done < <(cursor_gpu_args)
 
 # Docker Desktop на Windows часто пробрасывает WSL-переменные — Cursor показывает диалог
 unset WSL_DISTRO_NAME WSL_INTEROP WSLENV 2>/dev/null || true
@@ -44,8 +54,16 @@ CURSOR_BIN=$(find_cursor_binary) || {
     exit 1
 }
 
+CURSOR_BASE_ARGS=(
+    --no-sandbox
+    --disable-gpu-sandbox
+    --disable-dev-shm-usage
+)
+if ! gpu_accel_enabled; then
+    CURSOR_BASE_ARGS+=(--disable-gpu)
+fi
+
 exec "${CURSOR_BIN}" \
-    --no-sandbox \
-    --disable-gpu-sandbox \
-    --disable-dev-shm-usage \
+    "${CURSOR_BASE_ARGS[@]}" \
+    "${CURSOR_EXTRA_ARGS[@]}" \
     "$@"

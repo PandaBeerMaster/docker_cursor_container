@@ -5,18 +5,24 @@ set -euo pipefail
 
 # shellcheck source=load-app-session.sh
 source /usr/local/lib/cursor-desktop/load-app-session.sh
+# shellcheck source=gpu-accel.sh
+source /usr/local/bin/gpu-accel.sh
 
 if [[ "$(id -u)" -eq 0 && -z "${CHROME_AS_APP:-}" ]]; then
     exec gosu app:app env CHROME_AS_APP=1 /usr/local/bin/google-chrome-stable "$@"
 fi
+
+apply_gpu_accel_env
 
 CHROME=/usr/bin/google-chrome-stable
 CHROME_ARGS=(
     --no-sandbox
     --disable-dev-shm-usage
     --no-first-run
-    --disable-gpu
 )
+while IFS= read -r flag; do
+    [[ -n "${flag}" ]] && CHROME_ARGS+=("${flag}")
+done < <(chrome_gpu_args)
 
 log() {
     echo "[$(date -Iseconds)] $*" >> /tmp/chrome-open.log

@@ -39,6 +39,10 @@ services:
       AUTOSTART_CURSOR: ${AUTOSTART_CURSOR:-1}
       # 1 = переустановить Cursor из /packages/ при старте (нужен root в entrypoint)
       CURSOR_AUTO_UPDATE: ${CURSOR_AUTO_UPDATE:-0}
+      GIT_USER: ${GIT_USER:-}
+      GIT_MAIL: ${GIT_MAIL:-}
+      # 1 + docker-compose.gpu.yml — VA-API (см. .env.example)
+      GPU_ACCEL: ${GPU_ACCEL:-0}
 
     # Профили на хосте — переживают docker compose down && up -d
     volumes:
@@ -52,6 +56,6 @@ services:
     # Не задавайте user: здесь, иначе права на ./data могут не выровняться.
 
     # Chrome / Electron в Docker
-    shm_size: "4gb"
+    shm_size: "8gb"
 
     init: true

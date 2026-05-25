@@ -4,13 +4,6 @@ set -euo pipefail
 
 export DISPLAY="${DISPLAY:-:1}"
 
-# PRIMARY <-> CLIPBOARD — без этого копирование в приложениях часто не доходит до VNC.
-if command -v autocutsel >/dev/null 2>&1; then
-    pkill -u "$(id -u)" autocutsel 2>/dev/null || true
-    autocutsel -fork
-    autocutsel -fork -selection PRIMARY
-fi
-
 # us + ru, переключение Alt+Shift (настраивается через XKB_LAYOUT / XKB_OPTIONS).
 if command -v setxkbmap >/dev/null 2>&1; then
     layout="${XKB_LAYOUT:-us,ru}"

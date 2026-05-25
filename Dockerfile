@@ -67,12 +67,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     git \
     openssh-client \
+    libva2 \
+    vainfo \
+    mesa-va-drivers \
+    va-driver-all \
     && rm -rf /var/lib/apt/lists/* \
     && sed -i \
         -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' \
         -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' \
         /etc/locale.gen \
     && locale-gen
+
+# libvncserver 0.9.15: исправление буфера обмена хост → VNC (ExtendedClipboard UTF-8, PR #639)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    pkg-config \
+    zlib1g-dev \
+    libjpeg-dev \
+    libpng-dev \
+    liblzo2-dev \
+    libssl-dev \
+    && curl -fsSL -o /tmp/libvncserver.tar.gz \
+        https://github.com/LibVNC/libvncserver/archive/refs/tags/LibVNCServer-0.9.15.tar.gz \
+    && tar xzf /tmp/libvncserver.tar.gz -C /tmp \
+    && cmake -B /tmp/libvncserver-LibVNCServer-0.9.15/build \
+        -DCMAKE_BUILD_TYPE=MinSizeRel \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu \
+        -DBUILD_SHARED_LIBS=ON \
+        -DWITH_EXAMPLES=OFF \
+        -DWITH_TESTS=OFF \
+        -DWITH_SDL=OFF \
+        -DWITH_GTK=OFF \
+    && cmake --build /tmp/libvncserver-LibVNCServer-0.9.15/build -j"$(nproc)" \
+    && cmake --install /tmp/libvncserver-LibVNCServer-0.9.15/build \
+    && ldconfig \
+    && rm -rf /tmp/libvncserver.tar.gz /tmp/libvncserver-LibVNCServer-0.9.15 \
+    && apt-get purge -y --auto-remove \
+        build-essential cmake pkg-config \
+        zlib1g-dev libjpeg-dev libpng-dev liblzo2-dev libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # --- Google Chrome (официальный репозиторий) ---
 RUN install -d -m 0755 /usr/share/keyrings \
@@ -106,6 +141,8 @@ COPY scripts/load-app-session.sh /usr/local/lib/cursor-desktop/load-app-session.
 COPY scripts/open-external-url.sh /usr/local/bin/open-external-url
 COPY scripts/cleanup-chrome-locks.sh /usr/local/bin/cleanup-chrome-locks.sh
 COPY scripts/setup-vnc-input.sh /usr/local/bin/setup-vnc-input.sh
+COPY scripts/setup-vnc-clipboard.sh /usr/local/bin/setup-vnc-clipboard.sh
+COPY scripts/gpu-accel.sh /usr/local/bin/gpu-accel.sh
 
 RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
         /usr/local/bin/google-chrome-stable /usr/local/bin/cursor \
@@ -113,6 +150,8 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
         /usr/local/bin/save-app-session.sh /usr/local/bin/open-external-url \
         /usr/local/bin/cleanup-chrome-locks.sh \
         /usr/local/bin/setup-vnc-input.sh \
+        /usr/local/bin/setup-vnc-clipboard.sh \
+        /usr/local/bin/gpu-accel.sh \
         /usr/local/lib/cursor-desktop/load-app-session.sh \
     && ln -sf /usr/local/bin/open-external-url /usr/local/bin/sensible-browser \
     && ln -sf /usr/local/bin/google-chrome-stable /usr/local/bin/www-browser \
@@ -130,6 +169,7 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
 # --- Пользователь без root (UID/GID настраиваются при сборке) ---
 RUN groupadd -g "${APP_GID}" app \
     && useradd -m -u "${APP_UID}" -g app -s /bin/bash app \
+    && usermod -aG video,render app 2>/dev/null || usermod -aG video app \
     && mkdir -p /home/app/.config /home/app/.cursor \
     && chown -R app:app /home/app
 

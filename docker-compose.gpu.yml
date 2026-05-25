@@ -1,0 +1,12 @@
+# Оверлей для GPU (Intel/AMD VA-API). Linux-хост с /dev/dri.
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+
+services:
+  desktop:
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+      - render
+    environment:
+      GPU_ACCEL: "1"
