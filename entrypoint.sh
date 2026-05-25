@@ -70,6 +70,9 @@ start_as_app() {
     openbox &
     OPENBOX_PID=$!
 
+    /usr/local/bin/setup-vnc-input.sh
+
+    # Без -noxfixes: x11vnc опрашивает CLIPBOARD через XFixes (иначе обмен с хостом не работает).
     x11vnc \
         -display "${DISPLAY}" \
         -rfbport "${VNC_PORT}" \
@@ -78,7 +81,6 @@ start_as_app() {
         -shared \
         -xkb \
         -noxrecord \
-        -noxfixes \
         -noxdamage \
         -bg
 

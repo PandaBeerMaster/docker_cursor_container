@@ -27,6 +27,11 @@ services:
       VNC_RESOLUTION: ${VNC_RESOLUTION:-}
       DISPLAY: ":1"
       HOME: /home/app
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      # Раскладки внутри VNC: us + ru, Alt+Shift для переключения
+      XKB_LAYOUT: ${XKB_LAYOUT:-us,ru}
+      XKB_OPTIONS: ${XKB_OPTIONS:-grp:alt_shift_toggle}
       DONT_PROMPT_WSL_INSTALL: "1"
       BROWSER: /usr/local/bin/open-external-url
       CHROME_EXECUTABLE: /usr/local/bin/google-chrome-stable
@@ -41,6 +46,8 @@ services:
       - ./data/cursor-config:/home/app/.config/Cursor
       - ./data/cursor-data:/home/app/.cursor
       - ./data/chrome-profile:/home/app/.config/google-chrome
+      # SSH-ключи и config — на хосте в ./data/ssh (переживают пересоздание контейнера)
+      - ./data/ssh:/home/app/.ssh
 
     # root → entrypoint chown томов → gosu app (см. entrypoint.sh)
     # Не задавайте user: здесь, иначе права на ./data могут не выровняться.

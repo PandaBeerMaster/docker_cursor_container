@@ -15,8 +15,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     VNC_WIDTH=1920 \
     VNC_HEIGHT=1080 \
     VNC_DEPTH=24 \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    XKB_LAYOUT=us,ru \
+    XKB_OPTIONS=grp:alt_shift_toggle \
     BROWSER=/usr/local/bin/open-external-url \
     CHROME_EXECUTABLE=/usr/local/bin/google-chrome-stable
 
@@ -33,9 +35,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     x11vnc \
     openbox \
     xterm \
+    autocutsel \
+    xclip \
+    x11-xserver-utils \
+    xkb-data \
+    locales \
     fontconfig \
     fonts-dejavu-core \
     fonts-liberation \
+    fonts-noto-core \
     libgtk-3-0 \
     libnotify4 \
     libnss3 \
@@ -58,7 +66,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     jq \
     git \
-    && rm -rf /var/lib/apt/lists/*
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i \
+        -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' \
+        -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' \
+        /etc/locale.gen \
+    && locale-gen
 
 # --- Google Chrome (официальный репозиторий) ---
 RUN install -d -m 0755 /usr/share/keyrings \
@@ -91,12 +105,14 @@ COPY scripts/save-app-session.sh /usr/local/bin/save-app-session.sh
 COPY scripts/load-app-session.sh /usr/local/lib/cursor-desktop/load-app-session.sh
 COPY scripts/open-external-url.sh /usr/local/bin/open-external-url
 COPY scripts/cleanup-chrome-locks.sh /usr/local/bin/cleanup-chrome-locks.sh
+COPY scripts/setup-vnc-input.sh /usr/local/bin/setup-vnc-input.sh
 
 RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
         /usr/local/bin/google-chrome-stable /usr/local/bin/cursor \
         /usr/local/bin/xdg-open /usr/local/bin/setup-default-browser.sh \
         /usr/local/bin/save-app-session.sh /usr/local/bin/open-external-url \
         /usr/local/bin/cleanup-chrome-locks.sh \
+        /usr/local/bin/setup-vnc-input.sh \
         /usr/local/lib/cursor-desktop/load-app-session.sh \
     && ln -sf /usr/local/bin/open-external-url /usr/local/bin/sensible-browser \
     && ln -sf /usr/local/bin/google-chrome-stable /usr/local/bin/www-browser \
