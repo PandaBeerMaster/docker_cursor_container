@@ -17,10 +17,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     VNC_DEPTH=24 \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    XKB_MODEL=pc105 \
-    XKB_LAYOUT=ru,us \
-    XKB_VARIANT=,winkeys \
-    XKB_OPTIONS=grp:alt_shift_toggle,grp_led:scroll \
+    XKB_LAYOUT=us,ru \
+    XKB_OPTIONS=grp:alt_shift_toggle \
     BROWSER=/usr/local/bin/open-external-url \
     CHROME_EXECUTABLE=/usr/local/bin/google-chrome-stable
 
@@ -149,9 +147,6 @@ COPY scripts/cleanup-chrome-locks.sh /usr/local/bin/cleanup-chrome-locks.sh
 COPY scripts/setup-vnc-input.sh /usr/local/bin/setup-vnc-input.sh
 COPY scripts/setup-vnc-clipboard.sh /usr/local/bin/setup-vnc-clipboard.sh
 COPY scripts/gpu-accel.sh /usr/local/bin/gpu-accel.sh
-COPY config/xorg/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
-COPY config/default/keyboard /etc/default/keyboard
-COPY config/openbox/autostart /etc/skel/.config/openbox/autostart
 COPY config/profile.d/cursor-desktop.sh /etc/profile.d/cursor-desktop.sh
 COPY config/inputrc /etc/inputrc.d/cursor-desktop
 
@@ -176,7 +171,7 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
     && update-alternatives --install /usr/bin/x-www-browser x-www-browser \
         /usr/local/bin/open-external-url 200 \
     && update-alternatives --set x-www-browser /usr/local/bin/open-external-url \
-    && chmod +x /etc/skel/.config/openbox/autostart /etc/profile.d/cursor-desktop.sh \
+    && chmod +x /etc/profile.d/cursor-desktop.sh \
     && grep -q 'inputrc.d/cursor-desktop' /etc/inputrc 2>/dev/null \
         || echo '$include /etc/inputrc.d/cursor-desktop' >> /etc/inputrc
 
@@ -184,8 +179,7 @@ RUN chmod +x /entrypoint.sh /usr/local/bin/update-cursor.sh \
 RUN groupadd -g "${APP_GID}" app \
     && useradd -m -u "${APP_UID}" -g app -s /bin/bash app \
     && usermod -aG video,render app 2>/dev/null || usermod -aG video app \
-    && mkdir -p /home/app/.config/openbox /home/app/.cursor \
-    && cp -a /etc/skel/.config/openbox/autostart /home/app/.config/openbox/autostart \
+    && mkdir -p /home/app/.config /home/app/.cursor \
     && chown -R app:app /home/app
 
 WORKDIR /home/app
