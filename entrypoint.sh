@@ -39,18 +39,6 @@ ensure_profile_dirs() {
         "${HOME}/.config/openbox"
 }
 
-configure_git() {
-    if ! command -v git >/dev/null 2>&1; then
-        return 0
-    fi
-    if [[ -n "${GIT_USER:-}" ]]; then
-        git config --global user.name "${GIT_USER}"
-    fi
-    if [[ -n "${GIT_MAIL:-}" ]]; then
-        git config --global user.email "${GIT_MAIL}"
-    fi
-}
-
 log_gpu_accel() {
     if [[ "${GPU_ACCEL:-0}" != "1" ]]; then
         return 0
@@ -67,7 +55,6 @@ log_gpu_accel() {
 
 start_as_app() {
     ensure_profile_dirs
-    configure_git
     log_gpu_accel
 
     rm -f /tmp/.X"${DISPLAY#:}"-lock 2>/dev/null || true

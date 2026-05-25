@@ -39,8 +39,6 @@ services:
       AUTOSTART_CURSOR: ${AUTOSTART_CURSOR:-1}
       # 1 = переустановить Cursor из /packages/ при старте (нужен root в entrypoint)
       CURSOR_AUTO_UPDATE: ${CURSOR_AUTO_UPDATE:-0}
-      GIT_USER: ${GIT_USER:-}
-      GIT_MAIL: ${GIT_MAIL:-}
       # 1 + docker-compose.gpu.yml — VA-API (см. .env.example)
       GPU_ACCEL: ${GPU_ACCEL:-0}
 
@@ -50,7 +48,6 @@ services:
       - ./data/cursor-config:/home/app/.config/Cursor
       - ./data/cursor-data:/home/app/.cursor
       - ./data/chrome-profile:/home/app/.config/google-chrome
-      - ./ssh:/home/app/.ssh
 
     # root → entrypoint chown томов → gosu app (см. entrypoint.sh)
     # Не задавайте user: здесь, иначе права на ./data могут не выровняться.

@@ -65,9 +65,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdk-pixbuf-2.0-0 \
     xdg-utils \
     jq \
-    git \
     bash-completion \
-    openssh-client \
     libva2 \
     vainfo \
     mesa-va-drivers \

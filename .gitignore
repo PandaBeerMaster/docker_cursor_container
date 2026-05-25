@@ -3,5 +3,3 @@ data/
 packages/*.deb
 packages/*.AppImage
 !packages/.gitkeep
-ssh/*
-!ssh/.gitkeep
